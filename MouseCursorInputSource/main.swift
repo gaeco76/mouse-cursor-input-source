@@ -27,7 +27,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         startInputSourcePolling()
         startSettingsPolling()
 
-        hideCustomCursor()
+        updateCursorVisibility()
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -64,9 +64,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         )
         cursorWindow.backgroundColor = .clear
         cursorWindow.isOpaque = false
-        cursorWindow.level = .floating
+        cursorWindow.level = .init(rawValue: Int(CGWindowLevelForKey(.cursorWindow)) + 1)
         cursorWindow.ignoresMouseEvents = true
-        cursorWindow.collectionBehavior = [.canJoinAllSpaces, .stationary]
+        cursorWindow.collectionBehavior = [.canJoinAllSpaces, .stationary, .fullScreenAuxiliary]
         cursorWindow.hasShadow = false
 
         cursorImageView = NSImageView(frame: NSRect(origin: .zero, size: size))
@@ -74,7 +74,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         cursorWindow.contentView = cursorImageView
 
         updateCursorImage()
-        cursorWindow.orderFront(nil)
     }
 
     // MARK: - 마우스 추적
@@ -120,13 +119,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func showCustomCursor() {
         cursorWindow.alphaValue = 1.0
-        CGDisplayHideCursor(CGMainDisplayID())
+        cursorWindow.orderFront(nil)
+        NSCursor.hide()
         isCustomCursorVisible = true
     }
 
     func hideCustomCursor() {
         cursorWindow.alphaValue = 0.0
-        CGDisplayShowCursor(CGMainDisplayID())
+        cursorWindow.orderOut(nil)
+        NSCursor.unhide()
         isCustomCursorVisible = false
     }
 
@@ -203,7 +204,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func showSystemCursor() {
-        CGDisplayShowCursor(CGMainDisplayID())
+        NSCursor.unhide()
     }
 }
 
