@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mouse Cursor Controller</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #1a1a1a;
+    color: #e8e8e8;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 24px;
+  }
+  .card {
+    background: #252525;
+    border: 1px solid #333;
+    border-radius: 16px;
+    padding: 32px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  h1 {
+    font-size: 20px;
+    margin-bottom: 24px;
+    text-align: center;
+  }
+  .status {
+    text-align: center;
+    margin-bottom: 24px;
+    padding: 16px;
+    border-radius: 12px;
+    background: #1f1f1f;
+    border: 1px solid #333;
+  }
+  .status-label {
+    font-size: 12px;
+    color: #888;
+    margin-bottom: 6px;
+  }
+  .status-value {
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .status.running { border-color: #2a4a2a; }
+  .status.running .status-value { color: #52c41a; }
+  .status.stopped { border-color: #4a1f1f; }
+  .status.stopped .status-value { color: #ff4d4f; }
+
+  .row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 0;
+    border-bottom: 1px solid #333;
+  }
+  .row:last-child { border-bottom: none; }
+  .row-label {
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .row-desc {
+    font-size: 12px;
+    color: #888;
+    margin-top: 4px;
+  }
+
+  /* Toggle Switch */
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 56px;
+    height: 30px;
+  }
+  .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #444;
+    transition: .3s;
+    border-radius: 30px;
+  }
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 22px;
+    width: 22px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+  }
+  input:checked + .slider {
+    background-color: #1890ff;
+  }
+  input:checked + .slider:before {
+    transform: translateX(26px);
+  }
+
+  .footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 11px;
+    color: #666;
+  }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h1>🖱️ Mouse Cursor Controller</h1>
+
+  <div id="statusBox" class="status stopped">
+    <div class="status-label">현재 상태</div>
+    <div id="statusText" class="status-value">확인 중...</div>
+  </div>
+
+  <div class="row">
+    <div>
+      <div class="row-label">커서 색상 변경</div>
+      <div class="row-desc">한글/영문에 따라 커서 색상 변경</div>
+    </div>
+    <label class="switch">
+      <input type="checkbox" id="appToggle" onchange="toggleApp()">
+      <span class="slider"></span>
+    </label>
+  </div>
+
+  <div class="row">
+    <div>
+      <div class="row-label">이동 중 숨김</div>
+      <div class="row-desc">마우스 이동 시 커서 숨김 / 멈추면 표시</div>
+    </div>
+    <label class="switch">
+      <input type="checkbox" id="idleHideToggle" onchange="toggleIdleHide()">
+      <span class="slider"></span>
+    </label>
+  </div>
+
+  <div class="row">
+    <div>
+      <div class="row-label">메뉴바 동작</div>
+      <div class="row-desc">메뉴바에 입력 소스 표시</div>
+    </div>
+    <label class="switch">
+      <input type="checkbox" id="menubarToggle" onchange="toggleMenubar()">
+      <span class="slider"></span>
+    </label>
+  </div>
+
+  <div class="row">
+    <div>
+      <div class="row-label">시작 프로그램 등록</div>
+      <div class="row-desc">로그인 시 자동 실행</div>
+    </div>
+    <label class="switch">
+      <input type="checkbox" id="launchToggle" onchange="toggleLaunch()">
+      <span class="slider"></span>
+    </label>
+  </div>
+
+  <div class="footer">
+    http://127.0.0.1:5001
+  </div>
+</div>
+
+<script>
+async function fetchStatus() {
+  try {
+    const res = await fetch('/api/status');
+    const data = await res.json();
+    updateUI(data);
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+function updateUI(data) {
+  const statusBox = document.getElementById('statusBox');
+  const statusText = document.getElementById('statusText');
+  const appToggle = document.getElementById('appToggle');
+  const idleHideToggle = document.getElementById('idleHideToggle');
+  const menubarToggle = document.getElementById('menubarToggle');
+  const launchToggle = document.getElementById('launchToggle');
+
+  if (data.running) {
+    statusBox.className = 'status running';
+    statusText.textContent = '실행 중';
+    appToggle.checked = true;
+  } else {
+    statusBox.className = 'status stopped';
+    statusText.textContent = '정지됨';
+    appToggle.checked = false;
+  }
+
+  idleHideToggle.checked = data.idle_hide;
+  menubarToggle.checked = data.menubar_running;
+  launchToggle.checked = data.launch_enabled;
+}
+
+async function toggleApp() {
+  const toggle = document.getElementById('appToggle');
+  toggle.disabled = true;
+  try {
+    if (toggle.checked) {
+      await fetch('/api/start');
+    } else {
+      await fetch('/api/stop');
+    }
+    await fetchStatus();
+  } catch (e) {
+    console.error(e);
+  }
+  toggle.disabled = false;
+}
+
+async function toggleIdleHide() {
+  const toggle = document.getElementById('idleHideToggle');
+  toggle.disabled = true;
+  try {
+    await fetch('/api/toggle_idle_hide');
+    await fetchStatus();
+  } catch (e) {
+    console.error(e);
+  }
+  toggle.disabled = false;
+}
+
+async function toggleMenubar() {
+  const toggle = document.getElementById('menubarToggle');
+  toggle.disabled = true;
+  try {
+    if (toggle.checked) {
+      await fetch('/api/start_menubar');
+    } else {
+      await fetch('/api/stop_menubar');
+    }
+    await fetchStatus();
+  } catch (e) {
+    console.error(e);
+  }
+  toggle.disabled = false;
+}
+
+async function toggleLaunch() {
+  const toggle = document.getElementById('launchToggle');
+  toggle.disabled = true;
+  try {
+    if (toggle.checked) {
+      await fetch('/api/enable_launch');
+    } else {
+      await fetch('/api/disable_launch');
+    }
+    await fetchStatus();
+  } catch (e) {
+    console.error(e);
+  }
+  toggle.disabled = false;
+}
+
+// 초기 로드 및 주기적 갱신
+fetchStatus();
+setInterval(fetchStatus, 1000);
+</script>
+
+</body>
+</html>

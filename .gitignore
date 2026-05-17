@@ -1,0 +1,32 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Xcode / Swift
+*.xcworkspace
+*.xcodeproj
+DerivedData/
+
+# App bundles (build artifacts)
+*.app/
+!MouseCursorInputSource.app/
+!InputSourceChecker.app/
+
+# Compiled binaries
+MouseCursorInputSource/MouseCursorInputSource
+InputSourceMenu/InputSourceChecker
+
+# Settings
+/tmp/.mousecursor_settings.json
