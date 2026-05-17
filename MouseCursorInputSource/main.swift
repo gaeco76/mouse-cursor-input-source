@@ -94,7 +94,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func updateCursorPosition() {
         let loc = NSEvent.mouseLocation
         let size = cursorWindow.frame.size
-        let origin = NSPoint(x: loc.x, y: loc.y - size.height + 4)
+        let origin = NSPoint(x: loc.x - 2, y: loc.y - size.height + 4)
         cursorWindow.setFrameOrigin(origin)
     }
 
@@ -187,10 +187,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         fillColor.setFill()
         path.fill()
-
-        NSColor.black.setStroke()
-        path.lineWidth = 1.5
-        path.stroke()
 
         let highlightPath = path.copy() as! NSBezierPath
         highlightPath.transform(using: AffineTransform(translationByX: 0, byY: 0.5))
