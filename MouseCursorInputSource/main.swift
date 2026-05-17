@@ -94,7 +94,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func updateCursorPosition() {
         let loc = NSEvent.mouseLocation
         let size = cursorWindow.frame.size
-        let origin = NSPoint(x: loc.x - 2, y: loc.y - size.height + 4)
+        let origin = NSPoint(x: loc.x + 6, y: loc.y - size.height + 4)
         cursorWindow.setFrameOrigin(origin)
     }
 
