@@ -55,7 +55,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     // MARK: - 커서 윈도우 설정
     func setupCursorWindow() {
-        let size = NSSize(width: 32, height: 32)
+        let size = NSSize(width: 22, height: 22)
         cursorWindow = NSWindow(
             contentRect: NSRect(origin: .zero, size: size),
             styleMask: [.borderless],
@@ -70,7 +70,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         cursorWindow.hasShadow = false
 
         cursorImageView = NSImageView(frame: NSRect(origin: .zero, size: size))
-        cursorImageView.imageScaling = .scaleNone
+        cursorImageView.imageScaling = .scaleProportionallyUpOrDown
         cursorWindow.contentView = cursorImageView
 
         updateCursorImage()
@@ -94,7 +94,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func updateCursorPosition() {
         let loc = NSEvent.mouseLocation
         let size = cursorWindow.frame.size
-        let origin = NSPoint(x: loc.x + 6, y: loc.y - size.height + 4)
+        let origin = NSPoint(x: loc.x - 1, y: loc.y - size.height + 4)
         cursorWindow.setFrameOrigin(origin)
     }
 
